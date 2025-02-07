@@ -6,3 +6,4 @@ tweepy
 requests
 python-dotenv
 base58
+solana

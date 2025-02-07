@@ -69,11 +69,11 @@ def send_telegram_message(message):
     except Exception as e:
         logging.error(f"Failed to send Telegram message: {e}")
 
-# Fetch Solana balance (Fake Balance for Testing)
+# Fetch Solana balance
 def fetch_balance(update: Update, context: CallbackContext):
     try:
-        fake_balance = 100.0  # Set a fake balance for testnet
-        send_telegram_message(f"💰 Current Balance: {fake_balance:.2f} SOL (Testnet)")
+        balance = client.get_balance(wallet.public_key)['result']['value'] / 1e9  # Convert lamports to SOL
+        send_telegram_message(f"💰 Current Balance: {balance:.2f} SOL")
     except Exception as e:
         logging.error(f"Failed to fetch balance: {e}")
         send_telegram_message("⚠️ Error fetching balance.")

@@ -1,7 +1,7 @@
 solana
+python-dotenv
+requests
 firebase-admin
 python-telegram-bot
-requests
-python-dotenv
 tweepy
 base58

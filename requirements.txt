@@ -5,3 +5,4 @@ solders
 tweepy
 requests
 python-dotenv
+base58

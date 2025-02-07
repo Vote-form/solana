@@ -1,9 +1,7 @@
-python-telegram-bot
-firebase-admin
 solana
-solders
-tweepy
+firebase-admin
+python-telegram-bot
 requests
 python-dotenv
+tweepy
 base58
-solana

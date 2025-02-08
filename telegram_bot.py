@@ -44,16 +44,23 @@ if not PRIVATE_KEY:
 wallet = Keypair.from_bytes(base58.b58decode(PRIVATE_KEY))
 
 # Initialize Firebase
-firebase_json = os.getenv("FIREBASE_CREDENTIALS")  # Load from environment variable
+firebase_json = os.getenv("FIREBASE_CREDENTIALS")
 if not firebase_json:
     raise ValueError("Missing Firebase credentials! Set FIREBASE_CREDENTIALS in Render.")
 
-cred = credentials.Certificate(json.loads(firebase_json))
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://solana-fdc09-default-rtdb.firebaseio.com'
-})
-logging.info("✅ Firebase Initialized Successfully!")
-
+try:
+    # Parse the Firebase credentials from the JSON string
+    firebase_credentials = json.loads(firebase_json)
+    
+    # Initialize Firebase
+    cred = credentials.Certificate(firebase_credentials)
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://solana-fdc09-default-rtdb.firebaseio.com'
+    })
+    
+    logging.info("✅ Firebase Initialized Successfully!")
+except json.JSONDecodeError as e:
+    raise ValueError(f"❌ Invalid Firebase JSON format: {e}")
 # Initialize Telegram bot
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 

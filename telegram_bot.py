@@ -5,7 +5,7 @@ import requests
 import base58
 import firebase_admin
 import json
-from firebase_admin import credentials, initialize_app
+from firebase_admin import credentials, initialize_app, db
 from dotenv import load_dotenv
 from solana.rpc.api import Client
 from solders.keypair import Keypair
@@ -43,24 +43,21 @@ if not PRIVATE_KEY:
     raise ValueError("Missing private key! Ensure SOL_PRIVATE_KEY is set in the environment.")
 wallet = Keypair.from_bytes(base58.b58decode(PRIVATE_KEY))
 
-# Initialize Firebase
-firebase_json = os.getenv("FIREBASE_CREDENTIALS")
-if not firebase_json:
-    raise ValueError("Missing Firebase credentials! Set FIREBASE_CREDENTIALS in Render.")
+# 🔹 Firebase Initialization (Loads JSON from Local File)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, "firebase_credentials.json")
 
-try:
-    # Parse the Firebase credentials from the JSON string
-    firebase_credentials = json.loads(firebase_json)
-    
-    # Initialize Firebase
-    cred = credentials.Certificate(firebase_credentials)
-    firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://solana-fdc09-default-rtdb.firebaseio.com'
-    })
-    
-    logging.info("✅ Firebase Initialized Successfully!")
-except json.JSONDecodeError as e:
-    raise ValueError(f"❌ Invalid Firebase JSON format: {e}")
+# Ensure the file exists before loading
+if not os.path.exists(FIREBASE_CREDENTIALS_PATH):
+    raise FileNotFoundError(f"❌ Firebase credentials not found at {FIREBASE_CREDENTIALS_PATH}")
+
+# Initialize Firebase
+cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://solana-fdc09-default-rtdb.firebaseio.com'
+})
+logging.info("✅ Firebase Initialized Successfully!")
+
 # Initialize Telegram bot
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 

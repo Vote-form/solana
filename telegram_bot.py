@@ -4,7 +4,8 @@ import logging
 import requests
 import base58
 import firebase_admin
-from firebase_admin import credentials, db
+import json
+from firebase_admin import credentials, initialize_app
 from dotenv import load_dotenv
 from solana.rpc.api import Client
 from solders.keypair import Keypair
@@ -22,7 +23,6 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 SOLANA_RPC_URL = os.getenv("SOLANA_RPC_URL", "https://api.mainnet-beta.solana.com")
 PRIVATE_KEY = os.getenv("SOL_PRIVATE_KEY")
 CMC_API_KEY = os.getenv("CMC_API_KEY")  # CoinMarketCap API Key
-FIREBASE_CREDENTIALS_PATH = "/mnt/data/solana-fdc09-firebase-adminsdk-fbsvc-7acdcf0c45.json"
 SAFETY_THRESHOLD = 85  # Minimum safety score for trading
 
 # Twitter API credentials
@@ -44,7 +44,11 @@ if not PRIVATE_KEY:
 wallet = Keypair.from_bytes(base58.b58decode(PRIVATE_KEY))
 
 # Initialize Firebase
-cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+firebase_json = os.getenv("FIREBASE_CREDENTIALS")  # Load from environment variable
+if not firebase_json:
+    raise ValueError("Missing Firebase credentials! Set FIREBASE_CREDENTIALS in Render.")
+
+cred = credentials.Certificate(json.loads(firebase_json))
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://solana-fdc09-default-rtdb.firebaseio.com'
 })

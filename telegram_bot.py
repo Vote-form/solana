@@ -7,7 +7,7 @@ import firebase_admin
 from firebase_admin import credentials, db
 from dotenv import load_dotenv
 from solana.rpc.api import Client
-import Keypair
+from solders.keypair import Keypair
 from telegram import Bot, Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import tweepy

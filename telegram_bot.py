@@ -45,7 +45,7 @@ wallet = Keypair.from_bytes(base58.b58decode(PRIVATE_KEY))
 
 # 🔹 Firebase Initialization (Loads JSON from Local File)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, "firebase_credentials.json")
+FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, "solana-fdc09-firebase-adminsdk-fbsvc-7acdcf0c45.json")
 
 # Ensure the file exists before loading
 if not os.path.exists(FIREBASE_CREDENTIALS_PATH):

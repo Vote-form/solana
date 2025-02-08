@@ -41,7 +41,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 client = Client(SOLANA_RPC_URL)
 if not PRIVATE_KEY:
     raise ValueError("Missing private key! Ensure SOL_PRIVATE_KEY is set in the environment.")
-wallet = Keypair.from_secret_key(base58.b58decode(PRIVATE_KEY))
+wallet = Keypair.from_bytes(base58.b58decode(PRIVATE_KEY))
 
 # Initialize Firebase
 cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)

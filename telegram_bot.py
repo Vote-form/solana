@@ -5,14 +5,14 @@ import requests
 import base58
 import firebase_admin
 import json
+import threading
 from firebase_admin import credentials, initialize_app, db
 from dotenv import load_dotenv
 from solana.rpc.api import Client
 from solders.keypair import Keypair
 from telegram import Bot, Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram.ext import Application, CommandHandler, CallbackContext
 import tweepy
-import threading
 
 # Load environment variables
 load_dotenv()
@@ -78,13 +78,13 @@ def send_telegram_message(message):
         logging.error(f"Failed to send Telegram message: {e}")
 
 # Fetch Solana balance
-def fetch_balance(update: Update, context: CallbackContext):
+async def fetch_balance(update: Update, context: CallbackContext):
     try:
         balance = client.get_balance(wallet.public_key)['result']['value'] / 1e9  # Convert lamports to SOL
-        send_telegram_message(f"💰 Current Balance: {balance:.2f} SOL")
+        await update.message.reply_text(f"💰 Current Balance: {balance:.2f} SOL")
     except Exception as e:
         logging.error(f"Failed to fetch balance: {e}")
-        send_telegram_message("⚠️ Error fetching balance.")
+        await update.message.reply_text("⚠️ Error fetching balance.")
 
 # Monitor tokens
 def monitor_tokens():
@@ -93,19 +93,19 @@ def monitor_tokens():
         time.sleep(30)  # Placeholder monitoring loop
 
 # Start trading
-def start_trading(update: Update, context: CallbackContext):
-    send_telegram_message("🚀 Trading started!")
+async def start_trading(update: Update, context: CallbackContext):
+    await update.message.reply_text("🚀 Trading started!")
     threading.Thread(target=monitor_tokens, daemon=True).start()
 
 # Stop trading
-def stop_trading(update: Update, context: CallbackContext):
-    send_telegram_message("⛔ Trading stopped!")
+async def stop_trading(update: Update, context: CallbackContext):
+    await update.message.reply_text("⛔ Trading stopped!")
 
 # Fetch total profit
-def fetch_profit(update: Update, context: CallbackContext):
+async def fetch_profit(update: Update, context: CallbackContext):
     trades = db.reference("/trades").get()
     total_profit = sum(trade.get("profit", 0) for trade in trades.values()) if trades else 0
-    send_telegram_message(f"📈 Total Profit: {total_profit:.2f} SOL")
+    await update.message.reply_text(f"📈 Total Profit: {total_profit:.2f} SOL")
 
 # Fetch CoinMarketCap token prices
 def fetch_cmc_prices():
@@ -123,41 +123,6 @@ def fetch_cmc_prices():
         return {}
 
 # Main function
-def main():
-    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start_trading", start_trading))
-    dp.add_handler(CommandHandler("stop_trading", stop_trading))
-    dp.add_handler(CommandHandler("profit", fetch_profit))
-    dp.add_handler(CommandHandler("balance", fetch_balance))
-    updater.start_polling()
-    send_telegram_message("🚀 Bot Started & Ready!")
-    updater.idle()
-
-if __name__ == "__main__":
-    main()
-from telegram.ext import Application, CommandHandler
-
-async def start_trading(update: Update, context: CallbackContext):
-    await update.message.reply_text("🚀 Trading started!")
-    threading.Thread(target=monitor_tokens, daemon=True).start()
-
-async def stop_trading(update: Update, context: CallbackContext):
-    await update.message.reply_text("⛔ Trading stopped!")
-
-async def fetch_balance(update: Update, context: CallbackContext):
-    try:
-        balance = client.get_balance(wallet.public_key)['result']['value'] / 1e9
-        await update.message.reply_text(f"💰 Current Balance: {balance:.2f} SOL")
-    except Exception as e:
-        logging.error(f"Failed to fetch balance: {e}")
-        await update.message.reply_text("⚠️ Error fetching balance.")
-
-async def fetch_profit(update: Update, context: CallbackContext):
-    trades = db.reference("/trades").get()
-    total_profit = sum(trade.get("profit", 0) for trade in trades.values()) if trades else 0
-    await update.message.reply_text(f"📈 Total Profit: {total_profit:.2f} SOL")
-
 def main():
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 

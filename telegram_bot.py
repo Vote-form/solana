@@ -136,3 +136,39 @@ def main():
 
 if __name__ == "__main__":
     main()
+from telegram.ext import Application, CommandHandler
+
+async def start_trading(update: Update, context: CallbackContext):
+    await update.message.reply_text("🚀 Trading started!")
+    threading.Thread(target=monitor_tokens, daemon=True).start()
+
+async def stop_trading(update: Update, context: CallbackContext):
+    await update.message.reply_text("⛔ Trading stopped!")
+
+async def fetch_balance(update: Update, context: CallbackContext):
+    try:
+        balance = client.get_balance(wallet.public_key)['result']['value'] / 1e9
+        await update.message.reply_text(f"💰 Current Balance: {balance:.2f} SOL")
+    except Exception as e:
+        logging.error(f"Failed to fetch balance: {e}")
+        await update.message.reply_text("⚠️ Error fetching balance.")
+
+async def fetch_profit(update: Update, context: CallbackContext):
+    trades = db.reference("/trades").get()
+    total_profit = sum(trade.get("profit", 0) for trade in trades.values()) if trades else 0
+    await update.message.reply_text(f"📈 Total Profit: {total_profit:.2f} SOL")
+
+def main():
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+
+    # Add handlers
+    application.add_handler(CommandHandler("start_trading", start_trading))
+    application.add_handler(CommandHandler("stop_trading", stop_trading))
+    application.add_handler(CommandHandler("balance", fetch_balance))
+    application.add_handler(CommandHandler("profit", fetch_profit))
+
+    # Start polling
+    application.run_polling()
+
+if __name__ == "__main__":
+    main()
